@@ -2,6 +2,8 @@
 
 A Model Context Protocol (MCP) server that provides access to Linux man pages using FastMCP. This server allows AI assistants to search, retrieve, and explore system documentation directly from your local machine.
 
+This server is packaged as an MCPB (MCP Bundle) for easy integration with GitHub Copilot in VS Code.
+
 ## Features
 
 - **Search man pages**: Find documentation by keyword or command name using `apropos`
@@ -11,14 +13,44 @@ A Model Context Protocol (MCP) server that provides access to Linux man pages us
 - **Async operations**: All operations are asynchronous with timeout protection
 - **MCP Resources**: Expose man pages as resources with `man://` URIs
 
+## Requirements
+
+- **Operating System**: Linux with standard man page system
+- **Python**: 3.10 or higher
+- **System Commands**: `man`, `apropos` (usually pre-installed on Linux)
+- **Dependencies**: MCP library (bundled in MCPB or installed via package managers)
+
 ## Installation
 
-### Using uv (recommended)
+### Quick Start with MCPB Bundle
+
+The easiest way to use this server is with the MCPB bundle, which is supported by Claude Desktop:
 
 ```bash
 # Clone the repository
-git clone https://github.com/guyru/man-mcp-server.git
-cd man-mcp-server
+git clone https://github.com/guyru/man-mcp.git
+cd man-mcp
+
+# Build the MCPB bundle
+make build
+
+# This creates dist/man-mcp-{version}.mcpb
+```
+
+#### Installing in Claude Desktop
+
+1. Open Claude Desktop settings
+2. Navigate to the MCP section
+3. Add the generated `dist/man-mcp-{version}.mcpb` bundle file
+
+### Development Installation
+
+#### Using uv (recommended)
+
+```bash
+# Clone the repository
+git clone https://github.com/guyru/man-mcp.git
+cd man-mcp
 
 # Install dependencies
 uv sync
@@ -27,12 +59,12 @@ uv sync
 uv sync --extra dev
 ```
 
-### Using pip
+#### Using pip
 
 ```bash
 # Clone the repository
-git clone https://github.com/guyru/man-mcp-server.git
-cd man-mcp-server
+git clone https://github.com/guyru/man-mcp.git
+cd man-mcp
 
 # Install the package and dependencies from pyproject.toml
 pip install .
@@ -46,57 +78,83 @@ pip install -e .[dev]
 
 ## Usage
 
-### Running the Server
+### Running the Server for Development
 
 ```bash
 # Using uv
-uv run python3 man_server.py
+uv run python3 server/main.py
 
 # Using python directly
-python3 man_server.py
+python3 server/main.py
 
 # With MCP development tools
-uv run mcp dev man_server.py
+uv run mcp dev server/main.py
+```
+
+### Building and Using MCPB Bundle
+
+```bash
+# Build the bundle
+make build
+
+# Test the bundle
+make test
+
+# View bundle information
+make info
 ```
 
 ### VS Code Integration
 
-To integrate this MCP server with VS Code, you need to create a configuration file:
+This MCP server can be integrated with VS Code using the GitHub Copilot extension. Since GitHub Copilot does not yet support MCPB bundles, direct configuration is required for VS Code.
 
-1. **Create the VS Code MCP configuration directory** (if it doesn't exist):
-   ```bash
-   mkdir -p .vscode
-   ```
+#### Configuration for GitHub Copilot
 
-2. **Create `.vscode/mcp.json`** with the following content:
-   ```json
-   {
-     "servers": {
-       "man-mcp-server": {
-         "type": "stdio",
-         "command": "uv",
-         "args": ["run", "--directory", "/path/to/man-mcp-server", "python3", "man_server.py"]
-       }
-     }
-   }
-   ```
+Create a `.vscode/mcp.json` file in your workspace with the following configuration:
 
-3. **Update the path** in the configuration above to match your actual project directory.
+```json
+{
+  "servers": {
+    "man-mcp-server": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "/path/to/man-mcp",
+        "server/main.py"
+      ]
+    }
+  }
+}
+```
 
-4. **Alternative configuration** if you're not using uv:
-   ```json
-   {
-     "servers": {
-       "man-mcp-server": {
-         "type": "stdio",
-         "command": "python3",
-         "args": ["/path/to/man-mcp-server/man_server.py"]
-       }
-     }
-   }
-   ```
+#### Alternative: Using python directly
 
-This configuration allows MCP-compatible VS Code extensions to communicate with your man pages server.
+If you prefer not to use uv, you can configure it with python directly:
+
+```json
+{
+  "servers": {
+    "man-mcp-server": {
+      "type": "stdio",
+      "command": "python3",
+      "args": ["/path/to/man-mcp/server/main.py"],
+      "env": {
+        "PYTHONPATH": "/path/to/man-mcp/server/lib"
+      }
+    }
+  }
+}
+```
+
+#### MCP Bundle Support
+
+MCP bundles are supported by Claude Desktop and can be installed directly. For other MCP clients like GitHub Copilot, use the manual configuration above.
+
+**Note**: Replace `/path/to/man-mcp` with the actual path to your project directory.
+
+Once configured, you can interact with the man pages server through GitHub Copilot in VS Code by asking questions about Linux commands and system documentation.
 
 ## Available Tools
 
@@ -134,39 +192,35 @@ Examples:
 - `man://1/ls` - The ls command man page from section 1
 - `man://3/printf` - The printf function man page from section 3
 
-## Requirements
+## Troubleshooting
 
-- **Operating System**: Linux with standard man page system
-- **Python**: 3.10 or higher
-- **Commands**: `man`, `apropos` (usually pre-installed)
-- **Dependencies**: `mcp` library
 
 ## Development
 
-### Testing the Server
+### Available Make Commands
 
 ```bash
-# Test search functionality
-uv run python3 -c "
-from man_server import man_service
-import asyncio
-print(asyncio.run(man_service.search_man_pages('ls')))
-"
+# Build the MCPB bundle
+make build
 
-# Test page retrieval
-uv run python3 -c "
-from man_server import man_service
-import asyncio
-content = asyncio.run(man_service.get_man_page('ls', '1'))
-print(content[:200] + '...')
-"
+# Test the bundle and server functionality
+make test
+
+# Show bundle information
+make info
+
+# Clean build artifacts
+make clean
+
+# Show all available targets
+make help
 ```
 
 ### Using with MCP Inspector
 
 ```bash
 # Run with MCP development tools for debugging
-uv run mcp dev man_server.py
+uv run mcp dev server/main.py
 ```
 
 ## Error Handling

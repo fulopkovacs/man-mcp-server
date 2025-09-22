@@ -27,3 +27,7 @@ dist/
 .DS_Store
 
 .github/copilot-instructions.md
+
+# Dynamically generated files
+*.mcpb
+**/server/lib/**
