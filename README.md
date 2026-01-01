@@ -28,7 +28,7 @@ The easiest way to use this server is with the MCPB bundle, which is supported b
 
 ```bash
 # Clone the repository
-git clone https://github.com/guyru/man-mcp.git
+git clone https://github.com/guyru/man-mcp-server.git
 cd man-mcp
 
 # Build the MCPB bundle
@@ -49,7 +49,7 @@ make build
 
 ```bash
 # Clone the repository
-git clone https://github.com/guyru/man-mcp.git
+git clone https://github.com/guyru/man-mcp-server.git
 cd man-mcp
 
 # Install dependencies
@@ -63,7 +63,7 @@ uv sync --extra dev
 
 ```bash
 # Clone the repository
-git clone https://github.com/guyru/man-mcp.git
+git clone https://github.com/guyru/man-mcp-server.git
 cd man-mcp
 
 # Install the package and dependencies from pyproject.toml
